@@ -48,7 +48,7 @@ setInterval(function () { location.reload() }, 60000);
             for(var log in data )
             {
               var query = data[log];
-              if(query != null && query.querytype !== null && query.querytype == 'connections' && query.code == null && moment(query.querytime).seconds() === moment().seconds()-2)
+              if(query != null && query.querytype !== null && query.querytype == 'connections' && query.code == null && moment(query.querytime).isSame(moment().subtract(1,"seconds")))
               {
                 connections_count++;
 
