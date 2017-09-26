@@ -14,6 +14,7 @@
     <div id="connections"></div>
     <div id="map" style="width: 100%; height: 100%"></div>
     <script>
+setInterval(function () { location.reload() }, 60000);
     /**
     * Initializing leaflet map
     */
@@ -36,18 +37,28 @@
 
     var api_response = [];
     var connections_count = 0;
+    var datetime = null;
+
     function loadConnections()
     {
       // getting Json response from iRail api log
       $.getJSON(
         {
           url: query_log,
-          success: function(data)
+          success: function(data, status, jqr)
           {
+            var serverDate = moment(jqr.getResponseHeader("expires")).subtract(1,"seconds");
+            if (!datetime) {
+              //get last second minus
+              datetime = moment(data[data.length-1].querytime).subtract(1,"seconds");
+            } else {
+              datetime = datetime.add(1,"seconds");
+            }
             for(var log in data )
             {
               var query = data[log];
-              if(query != null && query.querytype !== null && query.querytype == 'connections' && query.code == null && moment(query.querytime).seconds() === moment().seconds()-2)
+              if(query != null && query.querytype !== null && query.querytype == 'connections' && query.code == null
+                               && moment(query.querytime).format("X") === datetime.format("X"))
               {
                 connections_count++;
 
@@ -64,6 +75,8 @@
                 var longTo =  query.query.arrivalStop.longitude;
 
                 var dateTime = query.query.dateTime;
+
+                console.log("Query at " + datetime.format() + " from " + dep_name + " to " + arr_name); 
 
                 // Lat and Long information of departure and arrival
                 var pointFrom = new L.LatLng(latFrom, longFrom);
@@ -95,7 +108,6 @@
               }
             }
           });
-
     }
     window.setInterval(loadConnections,1000);
 	</script>
